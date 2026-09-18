@@ -15,8 +15,7 @@ def process_delivery(current_total, new_entry):
     return current_total + new_entry if new_entry != "failed" else current_total
 
 def generate_report(i):
-    # units = sum(c for c in i if isinstance(c, int))
-    units = lambda x: sum(c for c in x if isinstance(c, int))(i)
+    units = sum(c for c in i if isinstance(c, int))
     failed = i.count("failed")
     print(f'Total Process Units: {units}')
     print(f'Failed Entries: {failed}')
