@@ -20,11 +20,11 @@ def save_inventory():
                 file.write(f"{item}\n") 
 
 # Entry
-def entry_process(count):
+def entry_process(count,itemName):
 
-    if not count == "quit":
+    if not count or itemName == "quit":
         if count.isdigit() and int(count) > 0:
-            return int(count)
+            return {"id": len(inventory), "itemName": itemName, "count": int(count)}
         else:
             return "failed"
     else:
@@ -34,7 +34,7 @@ def entry_process(count):
 
 # Report
 def generate_report(i):
-    units = sum(c for c in i if isinstance(c, int))
+    units = sum(c["count"] for c in i if isinstance(c, dict))
     failed = i.count("failed")
     print(f'Total Process Units: {units}')
     print(f'Failed Entries: {failed}')
@@ -42,7 +42,7 @@ def generate_report(i):
 
 # Calculation
 def process_delivery(current_total, new_entry):
-    return current_total + new_entry if new_entry != "failed" else current_total
+    return current_total + new_entry["count"] if new_entry != "failed" else current_total
 
 
 def calculate_tax(total_units):
@@ -56,7 +56,9 @@ def main():
 
     load_inventory()
     while True:
-        new_entry = entry_process(input('enter stock quantity '))
+        itemName = input('enter item name: ')
+        count = input('enter stock quantity: ')
+        new_entry = entry_process(count, itemName)
         inventory.append(new_entry)
 
         total_units = process_delivery(total_units, new_entry)

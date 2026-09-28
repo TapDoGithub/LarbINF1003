@@ -1,1 +1,4 @@
-0
+{'id': 0, 'itemName': 'Wireless mouse', 'count': 100}
+{'id': 1, 'itemName': 'keyboard', 'count': 100}
+{'id': 2, 'itemName': 'Usb Cable', 'count': 300}
+{'id': 3, 'itemName': 'Laptop Stand', 'count': 10}
