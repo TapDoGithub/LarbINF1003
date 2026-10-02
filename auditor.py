@@ -1,3 +1,5 @@
+import json
+
 # Global Variables
 inventory = []
 
@@ -5,33 +7,78 @@ inventory = []
 def load_inventory():
     global inventory
 
-    
     try:
-        with open('inventory.txt', 'r') as file:
-            inventory = [line.strip() for line in file if line.strip()]
-            print(f"Inventory: \n {chr(10).join(inventory)}")
+        with open('inventory.json', 'r') as file:
+            inventory = [json.loads(line) for line in file if line.strip()]
+            
     except FileNotFoundError:
         inventory = []
 
 def save_inventory():
-    with open('inventory.txt', 'w') as file:
+    with open('inventory.json', 'w') as file:
         for item in inventory:
             if item != "failed":
-                file.write(f"{item}\n") 
+                json.dump(item, file)
+                file.write('\n')
 
 # Entry
-def entry_process(count,itemName):
+def select_product(id):
+    for item in inventory:
+        if item['id'] == id:
+            return item
+    return None
 
-    if not count or itemName == "quit":
-        if count.isdigit() and int(count) > 0:
-            return {"id": len(inventory), "itemName": itemName, "count": int(count)}
-        else:
-            return "failed"
+def entry_process(id=len(inventory), count=None, price=None, itemName=None):
+
+    if count.isdigit() and int(count) > 0:
+        return {"id": id, "itemName": itemName, "price": float(price), "count": int(count)}
     else:
-        generate_report(inventory)
-        save_inventory()
-        exit()
+        return "failed"
 
+def add_product():
+    print("Adding a new product")
+    id = input('Product ID: ')
+    itemName = input('Product Name: ')
+    price = input('Product Price: ')
+    count = input('Stock Quantity: ')
+    new_entry = entry_process(id, count, price, itemName)
+    inventory.append(new_entry)
+
+def update_product():
+    print("Updating a product")
+    id = input('Product ID: ')
+    search_result = select_product(id)
+    if search_result != None:
+        itemName = input('New Product Name: ')
+        price = input('New Price: ')
+        count = input('New Stock Quantity: ')
+
+        updated_entry = entry_process(id, count, price, itemName)
+        if updated_entry != "failed":
+            inventory.remove(search_result)
+            inventory.append(updated_entry)
+            print(f"Product {id} updated successfully.")
+        else:
+            print("Invalid stock quantity. Update failed.")
+    else:
+        print("Product not found.")
+
+def search_product():
+    print ("Searching product")
+    id = input('Enter product ID to search: ')
+    item = select_product(id)
+    if item != None:
+        print(f"ID:{item['id']}|Name:{item['itemName']}|Price:{item['price']}|Stock:{item['count']}")
+    else:
+        print("Product not found.")
+
+def display_all():
+    print("Displaying all products:")
+
+    for item in inventory:
+        if item != "failed":
+            print(f"ID:{item['id']}|Name:{item['itemName']}|Price:{item['price']}|Stock:{item['count']}")
+    
 # Report
 def generate_report(i):
     units = sum(c["count"] for c in i if isinstance(c, dict))
@@ -56,16 +103,30 @@ def main():
 
     load_inventory()
     while True:
-        itemName = input('enter item name: ')
-        count = input('enter stock quantity: ')
-        new_entry = entry_process(count, itemName)
-        inventory.append(new_entry)
+        print("MENU")
+        print("1. Display All Products")
+        print("2. Add Product")
+        print("3. Update Product")
+        print("4. Search Product")
+        print("5. Save inventory")
+        print("6. Exit")
 
-        total_units = process_delivery(total_units, new_entry)
-        if total_units > 500:
-            print("ALERT: total inventory exceeds 500 units")
+        choice = input("Enter your choice: ")
+        print("\n")
+        if choice == "1":
+            display_all()
+        elif choice == "2":
+            add_product()
+        elif choice == "3":
+            update_product()
+        elif choice == "4":
+            search_product()
+        elif choice == "5":
             save_inventory()
-            generate_report(inventory)
+        elif choice == "6":
+            print("Saving inventory and exiting...")
+            save_inventory()
             break
 
-main()
+if __name__ == "__main__":
+    main()
