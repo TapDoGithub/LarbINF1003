@@ -1,84 +1,10 @@
-import json
 
-# Global Variables
-inventory = []
+import product 
+import inventory_manager
 
-# Inventory
-def load_inventory():
-    global inventory
+inventory = inventory_manager.inventory
 
-    try:
-        with open('inventory.json', 'r') as file:
-            inventory = [json.loads(line) for line in file if line.strip()]
-            
-    except FileNotFoundError:
-        inventory = []
 
-def save_inventory():
-    with open('inventory.json', 'w') as file:
-        for item in inventory:
-            if item != "failed":
-                json.dump(item, file)
-                file.write('\n')
-
-# Entry
-def select_product(id):
-    for item in inventory:
-        if item['id'] == id:
-            return item
-    return None
-
-def entry_process(id=len(inventory), count=None, price=None, itemName=None):
-
-    if count.isdigit() and int(count) > 0:
-        return {"id": id, "itemName": itemName, "price": float(price), "count": int(count)}
-    else:
-        return "failed"
-
-def add_product():
-    print("Adding a new product")
-    id = input('Product ID: ')
-    itemName = input('Product Name: ')
-    price = input('Product Price: ')
-    count = input('Stock Quantity: ')
-    new_entry = entry_process(id, count, price, itemName)
-    inventory.append(new_entry)
-
-def update_product():
-    print("Updating a product")
-    id = input('Product ID: ')
-    search_result = select_product(id)
-    if search_result != None:
-        itemName = input('New Product Name: ')
-        price = input('New Price: ')
-        count = input('New Stock Quantity: ')
-
-        updated_entry = entry_process(id, count, price, itemName)
-        if updated_entry != "failed":
-            inventory.remove(search_result)
-            inventory.append(updated_entry)
-            print(f"Product {id} updated successfully.")
-        else:
-            print("Invalid stock quantity. Update failed.")
-    else:
-        print("Product not found.")
-
-def search_product():
-    print ("Searching product")
-    id = input('Enter product ID to search: ')
-    item = select_product(id)
-    if item != None:
-        print(f"ID:{item['id']}|Name:{item['itemName']}|Price:{item['price']}|Stock:{item['count']}")
-    else:
-        print("Product not found.")
-
-def display_all():
-    print("Displaying all products:")
-
-    for item in inventory:
-        if item != "failed":
-            print(f"ID:{item['id']}|Name:{item['itemName']}|Price:{item['price']}|Stock:{item['count']}")
-    
 # Report
 def generate_report(i):
     units = sum(c["count"] for c in i if isinstance(c, dict))
@@ -98,10 +24,9 @@ def calculate_tax(total_units):
 
 # Main
 def main():
-    global inventory
+    inventory_manager.load_inventory()
     total_units = 0
 
-    load_inventory()
     while True:
         print("MENU")
         print("1. Display All Products")
@@ -113,20 +38,12 @@ def main():
 
         choice = input("Enter your choice: ")
         print("\n")
-        if choice == "1":
-            display_all()
-        elif choice == "2":
-            add_product()
-        elif choice == "3":
-            update_product()
-        elif choice == "4":
-            search_product()
-        elif choice == "5":
-            save_inventory()
-        elif choice == "6":
-            print("Saving inventory and exiting...")
-            save_inventory()
-            break
+        options = {"1": inventory_manager.display_all, "2": inventory_manager.add_product, "3": inventory_manager.update_product, "4": inventory_manager.search_product, "5": inventory_manager.save_inventory, "6": exit}
+        if choice in options:
+            options[choice]()
+        else:
+            print("Invalid choice. Please try again.")
+
 
 if __name__ == "__main__":
     main()
